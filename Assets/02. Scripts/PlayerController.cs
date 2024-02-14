@@ -34,12 +34,18 @@ public class PlayerController : MonoBehaviour
 
     // Jump
     [SerializeField]
+    private bool isJumped = false;
+    [SerializeField]
     private float jumpSpeed;
     [SerializeField]
     private float powerJumpSpeed;
     [SerializeField]
     private bool isGround = true;
+    [SerializeField]
+    private int groundCount = 0;
     Coroutine powerJumpCo;
+    [SerializeField]
+    LayerMask groundCheckLayer;
 
     // Climb
     [SerializeField]
@@ -48,6 +54,12 @@ public class PlayerController : MonoBehaviour
     private bool isClimb = false;
     [SerializeField]
     private float climbSpeed = 0;
+    [SerializeField]
+    LayerMask ladderCheckLayer;
+
+    // Crouch
+    [SerializeField]
+    bool isCrouch = false;
 
     private void FixedUpdate()
     {
@@ -91,10 +103,8 @@ public class PlayerController : MonoBehaviour
     }
     private void Crouch(bool isCrouch)
     {
-        if (isCrouch)
-            animator.SetBool("IsCrouch", true);
-        else
-            animator.SetBool("IsCrouch", false);
+        this.isCrouch = isCrouch;
+        animator.SetBool("IsCrouch", isCrouch);
     }
     private void Climb()
     {
@@ -125,7 +135,7 @@ public class PlayerController : MonoBehaviour
         rigid.gravityScale = isClimb ? 0 : 1;
 
         this.isClimb = isClimb;
-        animator.SetBool("IsClimb", true);
+        animator.SetBool("IsClimb", isClimb);
     }
     private void SetClimbable(bool isClimbable)
     {
@@ -133,6 +143,8 @@ public class PlayerController : MonoBehaviour
     }
     private void SetIsGround(bool isGround)
     {
+        groundCount = isGround ? groundCount + 1 : groundCount - 1;
+
         this.isGround = isGround;
         animator.SetBool("IsGround", isGround);
     }
@@ -140,6 +152,7 @@ public class PlayerController : MonoBehaviour
     // Input System Call back
     private void OnMove(InputValue value)
     {
+        if (isCrouch) return;
         if (isClimb) return;
 
         moveDir = value.Get<Vector2>();
@@ -159,17 +172,34 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        if(value.isPressed)
+        if (value.isPressed)
         {
-            powerJumpSpeed = jumpSpeed;
-            powerJumpCo = StartCoroutine(PowerJump());
+            if (moveDir.x < MoveForce_Threshold && moveDir.x > -MoveForce_Threshold)
+            {
+                // 제자리 파워점프
+                powerJumpSpeed = jumpSpeed;
+                powerJumpCo = StartCoroutine(PowerJump());
+            }
+            else
+            {
+                // 이동중 점프
+                Jump(jumpSpeed);
+                isJumped = true;
+            }
         }
         else
         {
             if(powerJumpCo != null)
                 StopCoroutine(powerJumpCo);
 
-            SetIsGround(false);
+            // 점프키 지속입력 방지
+            if (isJumped)
+            {
+                isJumped = false;
+                Debug.Log(isJumped);
+                return;
+            }
+
             Jump(powerJumpSpeed);
             if (animator.GetBool("IsCrouch"))
                 Crouch(false);
@@ -179,6 +209,7 @@ public class PlayerController : MonoBehaviour
     {
         if (!isGround) return;
         if (isClimb) return;
+        if (rigid.velocity.magnitude != 0) return;
 
         // 토글형 앉기
         if(value.isPressed)
@@ -201,26 +232,33 @@ public class PlayerController : MonoBehaviour
     // Collision Call back
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        SetIsGround(true);
+        
     }
     private void OnCollisionExit2D(Collision2D collision)
     {
-        SetIsGround(false);
+        
     }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        SetClimbable(true);
+        if (groundCheckLayer.Contain(collision.gameObject.layer))
+            SetIsGround(true);
+        if (ladderCheckLayer.Contain(collision.gameObject.layer))
+            SetClimbable(true);
     }
     private void OnTriggerExit2D(Collider2D collision)
     {
-        SetClimbable(false);
+        if (groundCheckLayer.Contain(collision.gameObject.layer))
+            SetIsGround(false);
+        if (ladderCheckLayer.Contain(collision.gameObject.layer))
+            SetClimbable(false);
     }
 
     IEnumerator PowerJump()
     {
         while(true)
         {
-            yield return new WaitForSeconds(0.05f);
+            yield return new WaitForSeconds(0.01f);
             powerJumpSpeed += 0.05f;
 
             if (!animator.GetBool("IsCrouch"))
