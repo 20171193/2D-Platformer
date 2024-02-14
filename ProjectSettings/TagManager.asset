@@ -13,6 +13,7 @@ TagManager:
   - UI
   - Ground
   - Ladder
+  - Platform
   - 
   - 
   - 
@@ -35,8 +36,7 @@ TagManager:
   - 
   - 
   - 
-  - 
-  - 
+  - IgnoreLayer
   m_SortingLayers:
   - name: BackGround
     uniqueID: 2686510391
