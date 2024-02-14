@@ -6,14 +6,17 @@ public class Manager : MonoBehaviour
 {
     #region 싱글턴 메서드
     private static Manager instance = null;
-    [SerializeField] MySceneManager sceneManager;
-    [SerializeField] FadeManager fadeManager;
-    [SerializeField] DataManager dataManger;
+    //[SerializeField] MySceneManager sceneManager;
+    //[SerializeField] FadeManager fadeManager;
+    //[SerializeField] DataManager dataManger;
+    [SerializeField] LayerManager layerManager;
 
-    public static MySceneManager Scene { get { return instance.sceneManager; } } 
-    public static FadeManager Fade { get { return instance.fadeManager; } }
-    public static DataManager Data { get { return instance.dataManger; } }
-    
+    //public static MySceneManager Scene { get { return instance.sceneManager; } } 
+    //public static FadeManager Fade { get { return instance.fadeManager; } }
+    //public static DataManager Data { get { return instance.dataManger; } }
+    public static LayerManager Layer { get { return instance.layerManager; } }
+   
+
     private void Awake()
     {
         if (instance == null)
