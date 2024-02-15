@@ -1,46 +1,41 @@
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Eagle : Monster
 {
+    public enum EagleState{ Idle, Trace, Return, Die }
+
+    [Header("FSM")]
     [SerializeField]
-    float moveSpeed;
+    private StateMachine<EagleState> fsm;
 
     [SerializeField]
-    float detectRange;
-
+    private IdleState<Eagle> idleState;
     [SerializeField]
-    Vector3 moveDir;
+    private TraceState<Eagle> traceState;
+    [SerializeField]
+    private ReturnState<Eagle> returnState;
+
+    private void Awake()
+    {
+        fsm = new StateMachine<EagleState>();
+
+        fsm.AddState(EagleState.Idle, idleState);
+    }
 
     private void Start()
     {
         base.Initialize();
+        fsm.SetInitState(EagleState.Idle);
     }
 
     private void Update()
     {
+        fsm.Update();
 
+        if (GetDistanceToPlayer() < detectRange)
+            fsm.ChangeState(EagleState.Trace);
     }
-
-    //public void ChangeState(GameObject agent, MonsterState nextState)
-    //{
-
-    //}
-
-    private void IdleUpdate()
-    {
-        if(Vector2.Distance(playerTransform.position, transform.position) < detectRange)
-        {
-        }
-    }
-    private void TraceUpdate()
-    {
-
-    }
-    private void ReturnUpdate()
-    {
-
-    }
-
 }
