@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Tilemaps;
 
 public class PlayerController : MonoBehaviour
 {
@@ -76,10 +77,14 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (!isClimb)
+            Move();
+    }
+
+    private void Update()
+    {
         if (isClimb)
             Climb();
-        else
-            Move();
     }
 
     private void Move()
@@ -116,8 +121,7 @@ public class PlayerController : MonoBehaviour
     }
     private void JumpUnder()
     {
-        Physics2D.IgnoreCollision(gameObject.GetComponent<Collider2D>(), onPlatformObject.GetComponent<Collider2D>(), true);
-        StartCoroutine(IgnoreLayer(onPlatformObject));
+        StartCoroutine(IgnoreLayer());
     }
     private void Crouch(bool isCrouch)
     {
@@ -126,26 +130,7 @@ public class PlayerController : MonoBehaviour
     }
     private void Climb()
     {
-        animator.SetFloat("ClimbingSpeed", Mathf.Abs(moveDir.y));
-
-        // 입력을 받지 않는 경우
-        if (moveDir.y == 0)
-        {
-            // 반발력 (브레이크 적용)
-            if (rigid.velocity.y > MoveForce_Threshold)
-                rigid.AddForce(Vector2.down * brakePower);
-            else if (rigid.velocity.y < -MoveForce_Threshold)
-                rigid.AddForce(Vector2.up * brakePower);
-        }
-        else
-        {
-            rigid.AddForce(Vector2.up * moveDir.y * climbSpeed);
-
-            // 최대 속력 제한 (수직)
-            if (Mathf.Abs(rigid.velocity.y) > maxYVelocity)
-                rigid.velocity = rigid.velocity.y < 0
-                    ? new Vector2(rigid.velocity.y, -maxYVelocity) : new Vector2(rigid.velocity.x, maxYVelocity);
-        }
+        rigid.transform.Translate(new Vector2(0, moveDir.y * climbSpeed * Time.deltaTime));
     }
 
     private void SetClimb(bool isClimb)
@@ -242,13 +227,14 @@ public class PlayerController : MonoBehaviour
     private void OnClimb(InputValue value)
     {
         if (!isClimbable) return;
-
         rigid.velocity = Vector2.zero;
 
         moveDir.x = 0f;
         moveDir.y = value.Get<float>();
         Debug.Log(moveDir.y);
+        animator.SetFloat("ClimbingSpeed", Mathf.Abs(moveDir.y));
         SetClimb(true);
+        Climb();
     }
 
     // Collision Call back
@@ -294,10 +280,11 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    IEnumerator IgnoreLayer(GameObject gameObject)
+    IEnumerator IgnoreLayer()
     {
+        Physics2D.IgnoreCollision(gameObject.GetComponent<Collider2D>(), onPlatformObject.GetComponent<TilemapCollider2D>(), true);
         yield return new WaitForSeconds(0.5f);
-        Physics2D.IgnoreCollision(gameObject.GetComponent<Collider2D>(), onPlatformObject.GetComponent<Collider2D>(), false);
+        Physics2D.IgnoreCollision(gameObject.GetComponent<Collider2D>(), onPlatformObject.GetComponent<TilemapCollider2D>(), false);
         onPlatformObject = null;
     }
 }
