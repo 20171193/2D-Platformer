@@ -5,33 +5,63 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
 
+public enum PlayerState { Idle, Run, Crouch, Jump, Fall, ClimbIdle, Climbing, Die }
 public class PlayerController : MonoBehaviour
 {
+    [Header("FSM")]
+    [SerializeField]
+    private StateMachine<PlayerState> fsm;
+
+    [SerializeField]
+    private PlayerState curState;
+    public PlayerState CurState { set { curState = value; } }
+
+    private IdleState idleState;
+    private RunState runState;
+    private CrouchState crouchState;
+    private JumpState jumpState;
+    private FallState fallState;
+    private ClimbIdleState climbIdleState;
+    private ClimbingState climbingState;
+    private DieState dieState;
+
     [Header("Components")]
     [SerializeField]
-    Animator animator;
+    private Animator animator;
+    public Animator Animator { get { return animator; } }
+
     [SerializeField]
-    Rigidbody2D rigid;
+    private Rigidbody2D rigid;
+    public Rigidbody2D Rigid { get { return rigid; } }
+
     [SerializeField]
-    SpriteRenderer spRenderer;
-    [SerializeField]
-    Sprite sprClimb;
+    private SpriteRenderer spRenderer;
+    public SpriteRenderer SpRenderer { get { return spRenderer; } }
 
     [Space(5)]
 
     // Move
-    const float MoveForce_Threshold = 0.1f;
+    public const float MoveForce_Threshold = 0.1f;
+    
     [Header("Propertys")]
     [SerializeField]
-    float movePower;
+    private float movePower;
+    public float MovePower { get { return movePower; } }
+
     [SerializeField]
-    float brakePower;
+    private float brakePower;
+    public float BrakePower { get { return brakePower; } }
+
     [SerializeField]
-    float maxXVelocity;
+    private float maxXVelocity;
+    public float MaxXVelocity { get { return maxXVelocity; } }
+    
     [SerializeField]
-    float maxYVelocity;
+    private float maxYVelocity;
+    public float MaxYVelocity { get { return maxYVelocity; } }
 
     private Vector2 moveDir;
+    public Vector2 MoveDir { get { return moveDir; } }
 
     // Jump
     [SerializeField]
@@ -72,20 +102,61 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
+        fsm = new StateMachine<PlayerState>();
+        fsm.AddState(PlayerState.Idle, idleState);
+        fsm.AddState(PlayerState.Run, runState);
+        fsm.AddState(PlayerState.Crouch, crouchState);
+        fsm.AddState(PlayerState.Jump, jumpState);
+        fsm.AddState(PlayerState.Fall, fallState);
+        fsm.AddState(PlayerState.ClimbIdle, climbIdleState);
+        fsm.AddState(PlayerState.Climbing, climbingState);
+        fsm.AddState(PlayerState.Die, dieState);
+
         platformLayer = LayerMask.NameToLayer("Platform");
     }
 
     private void FixedUpdate()
     {
-        if (!isClimb)
-            Move();
+        switch(curState)
+        {
+            case PlayerState.Run:
+                Move();
+                break;
+            default:
+                break;
+        }
     }
 
     private void Update()
     {
-        if (isClimb)
-            Climb();
+        fsm.Update();
+
+        switch(curState)
+        {
+            case PlayerState.Idle:
+                break;
+            case PlayerState.Run:
+                
+                break;
+            case PlayerState.Crouch:
+                break;
+            case PlayerState.Jump:
+                break;
+            case PlayerState.Fall:
+                break;
+            case PlayerState.ClimbIdle:
+                break;
+            case PlayerState.Climbing:
+                break;
+            case PlayerState.Die:
+                break;
+        }
     }
+
+    //private bool GetIsMoved(float value)
+    //{
+    //    return value > MoveForce_Threshold;
+    //}
 
     private void Move()
     {
