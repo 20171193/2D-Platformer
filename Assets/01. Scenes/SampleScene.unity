@@ -2653,8 +2653,8 @@ MonoBehaviour:
   playerTransform: {fileID: 0}
   startPos: {x: 0, y: 0, z: 0}
   monsterType: 1
-  moveSpeed: 0
-  detectRange: 0
+  moveSpeed: 2
+  detectRange: 5
   moveDir: {x: 0, y: 0, z: 0}
 --- !u!1 &1345169694
 GameObject:
