@@ -11,6 +11,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 1
     m_ConditionEvent: IsClimb
     m_EventTreshold: 0
+  - m_ConditionMode: 4
+    m_ConditionEvent: ClimbingSpeed
+    m_EventTreshold: 0.01
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -3661421923703120793}
   m_Solo: 0
@@ -87,7 +90,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Climbing
-  m_Speed: 1
+  m_Speed: 0.05
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -481171992951643307}
@@ -291,9 +294,9 @@ AnimatorStateTransition:
   m_PrefabAsset: {fileID: 0}
   m_Name: 
   m_Conditions:
-  - m_ConditionMode: 3
+  - m_ConditionMode: 4
     m_ConditionEvent: ClimbingSpeed
-    m_EventTreshold: 0.1
+    m_EventTreshold: 0.01
   - m_ConditionMode: 1
     m_ConditionEvent: IsClimb
     m_EventTreshold: 0
@@ -466,7 +469,7 @@ AnimatorStateTransition:
     m_EventTreshold: 0
   - m_ConditionMode: 3
     m_ConditionEvent: ClimbingSpeed
-    m_EventTreshold: 0.1
+    m_EventTreshold: 0.01
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -5578071859191228863}
   m_Solo: 0
